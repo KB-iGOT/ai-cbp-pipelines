@@ -58,12 +58,25 @@ class PipelineWorker:
             await self.consumer.stop()
             self.log.info("Consumer stopped")
 
+    def _log_received(self, record: Any) -> None:
+        """Log every message as received from Kafka, before validation, so invalid ones are visible too."""
+        def text(raw: Any) -> str | None:
+            if raw is None:
+                return None
+            return raw.decode("utf-8", "replace") if isinstance(raw, bytes) else str(raw)
+
+        self.log.info(
+            "Received %s[%s]@%s key=%s value=%s",
+            record.topic, record.partition, record.offset, text(record.key), text(record.value),
+        )
+
     async def process_records(self, records: list[Any]) -> Counter:
         stats: Counter = Counter()
         latest: dict[str, tuple[Any, Any]] = {}
         unkeyed: list[tuple[Any, Any]] = []
 
         for record in records:
+            self._log_received(record)
             try:
                 event = self.pipeline.decode(record)
             except NonRetryableError as exc:
