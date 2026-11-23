@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Secrets and local config
+.env
+*.docker.env
+
+# Build output
+metadata.json
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
